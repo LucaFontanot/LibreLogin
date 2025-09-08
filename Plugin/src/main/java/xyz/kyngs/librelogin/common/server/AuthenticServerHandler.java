@@ -100,6 +100,8 @@ public class AuthenticServerHandler<P, S> implements ServerHandler<P, S> {
     }
 
     public S chooseLobbyServerInternal(@Nullable User user, P player, boolean remember, Boolean fallback) {
+        var vl = plugin.getPlatformHandle().getLobbyServer(player);
+        if (vl != null) return vl;
         if (user != null && remember && plugin.getConfiguration().get(REMEMBER_LAST_SERVER)) {
             var last = user.getLastServer();
 

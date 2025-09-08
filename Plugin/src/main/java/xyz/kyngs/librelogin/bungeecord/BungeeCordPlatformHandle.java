@@ -33,6 +33,11 @@ public class BungeeCordPlatformHandle implements PlatformHandle<ProxiedPlayer, S
     }
 
     @Override
+    public ServerInfo getLobbyServer(ProxiedPlayer player) {
+        return null;
+    }
+
+    @Override
     public UUID getUUIDForPlayer(ProxiedPlayer player) {
         return player.getUniqueId();
     }

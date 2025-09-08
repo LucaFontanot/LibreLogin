@@ -7,6 +7,7 @@
 package xyz.kyngs.librelogin.velocity;
 
 import com.google.common.base.MoreObjects;
+import com.lucaf.velocitylink.api.VelocityLinkPlugin;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import net.kyori.adventure.audience.Audience;
@@ -79,7 +80,14 @@ public class VelocityPlatformHandle implements PlatformHandle<Player, Registered
 
     @Override
     public String getIP(Player player) {
-        return player.getRemoteAddress().getAddress().getHostAddress();
+        VelocityLinkPlugin velocityLinkPlugin = VelocityLinkPlugin.getInstance();
+        return velocityLinkPlugin.getPlayerRealIp(player);
+    }
+
+    @Override
+    public RegisteredServer getLobbyServer(Player player) {
+        VelocityLinkPlugin velocityLinkPlugin = VelocityLinkPlugin.getInstance();
+        return velocityLinkPlugin.getPlayerLobbyServer(player);
     }
 
     @Override

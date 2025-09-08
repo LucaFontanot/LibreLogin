@@ -200,6 +200,8 @@ dependencies {
 
     //NanoLimboPlugin
     compileOnly("com.github.bivashy.NanoLimboPlugin:api:1.0.8")
+
+    compileOnly("com.lucaf:velocity-link-api:2.1.6")
 }
 
 tasks.withType<ProcessResources> {

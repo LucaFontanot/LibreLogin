@@ -31,6 +31,8 @@ public interface PlatformHandle<P, S> {
      */
     Audience getAudienceForPlayer(P player);
 
+    S getLobbyServer(P player);
+
     /**
      * Retrieves the UUID associated with the given player.
      *

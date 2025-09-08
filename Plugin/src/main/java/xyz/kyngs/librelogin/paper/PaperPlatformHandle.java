@@ -34,6 +34,11 @@ public class PaperPlatformHandle implements PlatformHandle<Player, World> {
     }
 
     @Override
+    public World getLobbyServer(Player player) {
+        return null;
+    }
+
+    @Override
     public UUID getUUIDForPlayer(Player player) {
         return player.getUniqueId();
     }
