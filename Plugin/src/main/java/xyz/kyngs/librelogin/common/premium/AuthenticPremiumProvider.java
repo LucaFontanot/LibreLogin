@@ -18,9 +18,11 @@ import xyz.kyngs.librelogin.common.util.GeneralUtil;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.SocketTimeoutException;
-import java.net.URL;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -31,6 +33,7 @@ public class AuthenticPremiumProvider implements PremiumProvider {
     private final Cache<String, PremiumUser> userCache;
     private final List<ThrowableFunction<String, PremiumUser, PremiumException>> fetchers;
     private final AuthenticLibreLogin<?, ?> plugin;
+    private final HttpClient httpClient;
 
     public AuthenticPremiumProvider(AuthenticLibreLogin<?, ?> plugin) {
         this.plugin = plugin;
@@ -44,6 +47,10 @@ public class AuthenticPremiumProvider implements PremiumProvider {
         fetchers.add(this::getUserFromPlayerDB);
         fetchers.add(this::getUserFromMinetools);
         //fetchers.add(this::getUserFromAshcon); //Momentarily disabled, as it's unreliable. See https://github.com/Electroid/mojang-api/issues/79
+
+        this.httpClient = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(5))
+                .build();
     }
 
     @Override
@@ -89,13 +96,15 @@ public class AuthenticPremiumProvider implements PremiumProvider {
     private PremiumUser getUserFromAshcon(String name) throws PremiumException {
         try {
             plugin.reportMainThread();
-            var connection = (HttpURLConnection) new URL("https://api.ashcon.app/mojang/v2/user/" + name).openConnection();
-            connection.setConnectTimeout(5000);
-            connection.setReadTimeout(5000);
-
-            switch (connection.getResponseCode()) {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.ashcon.app/mojang/v2/user/" + name))
+                    .timeout(Duration.ofSeconds(5))
+                    .GET()
+                    .build();
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            switch (response.statusCode()) {
                 case 200 -> {
-                    var data = AuthenticLibreLogin.GSON.fromJson(new InputStreamReader(connection.getInputStream()), JsonObject.class);
+                    var data = AuthenticLibreLogin.GSON.fromJson(response.body(), JsonObject.class);
 
                     var uuid = data.get("uuid");
                     var username = data.get("username").getAsString();
@@ -106,11 +115,11 @@ public class AuthenticPremiumProvider implements PremiumProvider {
                     return null;
                 }
                 case 429 ->
-                        throw new PremiumException(PremiumException.Issue.THROTTLED, GeneralUtil.readInput(connection.getErrorStream()));
+                        throw new PremiumException(PremiumException.Issue.THROTTLED, response.body());
                 default ->
-                        throw new PremiumException(PremiumException.Issue.UNDEFINED, GeneralUtil.readInput(connection.getErrorStream()));
+                        throw new PremiumException(PremiumException.Issue.UNDEFINED, response.body());
             }
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             throw new PremiumException(PremiumException.Issue.SERVER_EXCEPTION, e);
         }
     }
@@ -118,13 +127,15 @@ public class AuthenticPremiumProvider implements PremiumProvider {
     private PremiumUser getUserFromPlayerDB(String name) throws PremiumException {
         try {
             plugin.reportMainThread();
-            var connection = (HttpURLConnection) new URL("https://playerdb.co/api/player/minecraft/" + name).openConnection();
-            connection.setConnectTimeout(5000);
-            connection.setReadTimeout(5000);
-
-            switch (connection.getResponseCode()) {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://playerdb.co/api/player/minecraft/" + name))
+                    .timeout(Duration.ofSeconds(5))
+                    .GET()
+                    .build();
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            switch (response.statusCode()) {
                 case 200 -> {
-                    var data = AuthenticLibreLogin.GSON.fromJson(new InputStreamReader(connection.getInputStream()), JsonObject.class);
+                    var data = AuthenticLibreLogin.GSON.fromJson(response.body(), JsonObject.class);
 
                     var id = data.get("data").getAsJsonObject().get("player").getAsJsonObject().get("id").getAsString();
                     var username = data.get("data").getAsJsonObject().get("player").getAsJsonObject().get("username").getAsString();
@@ -139,11 +150,11 @@ public class AuthenticPremiumProvider implements PremiumProvider {
                     return null;
                 }
                 case 500 ->
-                        throw new PremiumException(PremiumException.Issue.SERVER_EXCEPTION, GeneralUtil.readInput(connection.getErrorStream()));
+                        throw new PremiumException(PremiumException.Issue.SERVER_EXCEPTION, response.body());
                 default ->
-                        throw new PremiumException(PremiumException.Issue.UNDEFINED, GeneralUtil.readInput(connection.getErrorStream()));
+                        throw new PremiumException(PremiumException.Issue.UNDEFINED, response.body());
             }
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             throw new PremiumException(PremiumException.Issue.SERVER_EXCEPTION, e);
         }
     }
@@ -151,13 +162,15 @@ public class AuthenticPremiumProvider implements PremiumProvider {
     private PremiumUser getUserFromMinetools(String name) throws PremiumException {
         try {
             plugin.reportMainThread();
-            var connection = (HttpURLConnection) new URL("https://api.minetools.eu/uuid/" + name).openConnection();
-            connection.setConnectTimeout(5000);
-            connection.setReadTimeout(5000);
-
-            switch (connection.getResponseCode()) {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.minetools.eu/uuid/" + name))
+                    .timeout(Duration.ofSeconds(5))
+                    .GET()
+                    .build();
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            switch (response.statusCode()) {
                 case 200 -> {
-                    var data = AuthenticLibreLogin.GSON.fromJson(new InputStreamReader(connection.getInputStream()), JsonObject.class);
+                    var data = AuthenticLibreLogin.GSON.fromJson(response.body(), JsonObject.class);
 
                     var rawId = data.get("id");
                     if (rawId == null || rawId.isJsonNull()) {
@@ -184,13 +197,11 @@ public class AuthenticPremiumProvider implements PremiumProvider {
                     return null;
                 }
                 case 500 ->
-                        throw new PremiumException(PremiumException.Issue.SERVER_EXCEPTION, GeneralUtil.readInput(connection.getErrorStream()));
+                        throw new PremiumException(PremiumException.Issue.SERVER_EXCEPTION, response.body());
                 default ->
-                        throw new PremiumException(PremiumException.Issue.UNDEFINED, GeneralUtil.readInput(connection.getErrorStream()));
+                        throw new PremiumException(PremiumException.Issue.UNDEFINED, response.body());
             }
-        } catch (SocketTimeoutException te) {
-            throw new PremiumException(PremiumException.Issue.THROTTLED, "Minetools API timed out");
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             throw new PremiumException(PremiumException.Issue.SERVER_EXCEPTION, e);
         }
     }
@@ -198,16 +209,18 @@ public class AuthenticPremiumProvider implements PremiumProvider {
     private PremiumUser getUserFromMojang(String name) throws PremiumException {
         try {
             plugin.reportMainThread();
-            var connection = (HttpURLConnection) new URL("https://api.mojang.com/users/profiles/minecraft/" + name).openConnection();
-            connection.setConnectTimeout(5000);
-            connection.setReadTimeout(5000);
-
-            return switch (connection.getResponseCode()) {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.mojang.com/users/profiles/minecraft/" + name))
+                    .timeout(Duration.ofSeconds(5))
+                    .GET()
+                    .build();
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            return switch (response.statusCode()) {
                 case 429 ->
-                        throw new PremiumException(PremiumException.Issue.THROTTLED, GeneralUtil.readInput(connection.getErrorStream()));
+                        throw new PremiumException(PremiumException.Issue.THROTTLED, response.body());
                 case 204, 404 -> null;
                 case 200 -> {
-                    var data = AuthenticLibreLogin.GSON.fromJson(new InputStreamReader(connection.getInputStream()), JsonObject.class);
+                    var data = AuthenticLibreLogin.GSON.fromJson(response.body(), JsonObject.class);
 
                     var id = data.get("id").getAsString();
                     var demo = data.get("demo");
@@ -219,19 +232,14 @@ public class AuthenticPremiumProvider implements PremiumProvider {
                     );
                 }
                 case 403 -> {
-                    if ("text/html".equals(connection.getContentType())) {
-                        throw new PremiumException(PremiumException.Issue.SERVER_EXCEPTION, GeneralUtil.readInput(connection.getErrorStream()));
-                    }
-                    throw new PremiumException(PremiumException.Issue.UNDEFINED, GeneralUtil.readInput(connection.getErrorStream()));
+                    throw new PremiumException(PremiumException.Issue.UNDEFINED, response.body());
                 }
                 case 500 ->
-                        throw new PremiumException(PremiumException.Issue.SERVER_EXCEPTION, GeneralUtil.readInput(connection.getErrorStream()));
+                        throw new PremiumException(PremiumException.Issue.SERVER_EXCEPTION, response.body());
                 default ->
-                        throw new PremiumException(PremiumException.Issue.UNDEFINED, GeneralUtil.readInput(connection.getErrorStream()));
+                        throw new PremiumException(PremiumException.Issue.UNDEFINED, response.body());
             };
-        } catch (SocketTimeoutException te) {
-            throw new PremiumException(PremiumException.Issue.THROTTLED, "Mojang API timed out");
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             throw new PremiumException(PremiumException.Issue.UNDEFINED, e);
         }
     }
@@ -240,25 +248,29 @@ public class AuthenticPremiumProvider implements PremiumProvider {
     public PremiumUser getUserForUUID(UUID uuid) throws PremiumException {
         try {
             plugin.reportMainThread();
-            var connection = (HttpURLConnection) new URL("https://sessionserver.mojang.com/session/minecraft/profile/" + uuid.toString()).openConnection();
-
-            return switch (connection.getResponseCode()) {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://sessionserver.mojang.com/session/minecraft/profile/" + uuid.toString()))
+                    .timeout(Duration.ofSeconds(5))
+                    .GET()
+                    .build();
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            return switch (response.statusCode()) {
                 case 429 ->
-                        throw new PremiumException(PremiumException.Issue.THROTTLED, GeneralUtil.readInput(connection.getErrorStream()));
+                        throw new PremiumException(PremiumException.Issue.THROTTLED, response.body());
                 case 204, 404 -> null;
                 case 200 -> {
-                    var data = AuthenticLibreLogin.GSON.fromJson(new InputStreamReader(connection.getInputStream()), JsonObject.class);
+                    var data = AuthenticLibreLogin.GSON.fromJson(response.body(), JsonObject.class);
 
                     var name = data.get("name").getAsString();
 
                     yield new PremiumUser(uuid, name, true); // Mojang API is always authoritative
                 }
                 case 500 ->
-                        throw new PremiumException(PremiumException.Issue.SERVER_EXCEPTION, GeneralUtil.readInput(connection.getErrorStream()));
+                        throw new PremiumException(PremiumException.Issue.SERVER_EXCEPTION, response.body());
                 default ->
-                        throw new PremiumException(PremiumException.Issue.UNDEFINED, GeneralUtil.readInput(connection.getErrorStream()));
+                        throw new PremiumException(PremiumException.Issue.UNDEFINED, response.body());
             };
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             throw new PremiumException(PremiumException.Issue.UNDEFINED, e);
         }
     }
