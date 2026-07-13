@@ -9,7 +9,7 @@ package xyz.kyngs.librelogin.common.command;
 import co.aikar.commands.BaseCommand;
 import co.aikar.commands.MessageKeys;
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.Component;
 import xyz.kyngs.librelogin.api.Logger;
 import xyz.kyngs.librelogin.api.configuration.Messages;
 import xyz.kyngs.librelogin.api.crypto.CryptoProvider;
@@ -42,7 +42,7 @@ public class Command<P> extends BaseCommand {
         return plugin.getMessages();
     }
 
-    protected TextComponent getMessage(String key, String... replacements) {
+    protected Component getMessage(String key, String... replacements) {
         return getMessages().getMessage(key, replacements);
     }
 

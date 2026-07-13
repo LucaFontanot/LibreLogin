@@ -6,7 +6,7 @@
 
 package xyz.kyngs.librelogin.common.util;
 
-import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.Nullable;
 import xyz.kyngs.librelogin.api.Logger;
 import xyz.kyngs.librelogin.api.database.ReadDatabaseProvider;
@@ -62,11 +62,11 @@ public class GeneralUtil {
     }
 
     @Nullable
-    public static TextComponent formatComponent(@Nullable TextComponent component, Map<String, String> replacements) {
+    public static Component formatComponent(@Nullable Component component, Map<String, String> replacements) {
         if (component == null) return null;
 
         for (Map.Entry<String, String> entry : replacements.entrySet()) {
-            component = (TextComponent) component.replaceText(builder -> builder.matchLiteral(entry.getKey()).replacement(entry.getValue()));
+            component = component.replaceText(builder -> builder.matchLiteral(entry.getKey()).replacement(entry.getValue()));
         }
         return component;
     }

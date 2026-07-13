@@ -6,17 +6,17 @@
 
 package xyz.kyngs.librelogin.common.command;
 
-import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.Component;
 
 public class InvalidCommandArgument extends RuntimeException {
 
-    private final TextComponent userFuckUp;
+    private final Component userFuckUp;
 
-    public InvalidCommandArgument(TextComponent userFuckUp) {
+    public InvalidCommandArgument(Component userFuckUp) {
         this.userFuckUp = userFuckUp;
     }
 
-    public TextComponent getUserFuckUp() {
+    public Component getUserFuckUp() {
         return userFuckUp;
     }
 }

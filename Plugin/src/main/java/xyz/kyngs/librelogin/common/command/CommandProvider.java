@@ -11,7 +11,7 @@ import co.aikar.commands.MessageKeys;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import xyz.kyngs.librelogin.api.database.User;
 import xyz.kyngs.librelogin.common.AuthenticHandler;
@@ -141,7 +141,7 @@ public class CommandProvider<P, S> extends AuthenticHandler<P, S> {
 
     }
 
-    public TextComponent getMessage(String key) {
+    public Component getMessage(String key) {
         return plugin.getMessages().getMessage(key);
     }
 

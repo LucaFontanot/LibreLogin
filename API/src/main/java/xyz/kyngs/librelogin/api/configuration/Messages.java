@@ -6,7 +6,7 @@
 
 package xyz.kyngs.librelogin.api.configuration;
 
-import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.Component;
 import xyz.kyngs.librelogin.api.LibreLoginPlugin;
 
 import java.io.IOException;
@@ -25,7 +25,7 @@ public interface Messages {
      * @param replacements Allows you to replace the placeholders in the message.
      * @return The message, or null if the message does not exist.
      */
-    TextComponent getMessage(String key, String... replacements);
+    Component getMessage(String key, String... replacements);
 
     /**
      * Reloads the messages.

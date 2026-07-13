@@ -18,7 +18,7 @@ mcupload {
     swallowErrors = true
     platforms {
         modrinth {
-            loaders = listOf("paper", "purpur", "bungeecord", "waterfall", "velocity")
+            loaders = listOf("paper", "purpur", "waterfall", "velocity")
             projectId = "tL0SCXYq"
             gameVersions = listOf(
                 "1.21.4", "1.21.3", "1.21.2", "1.21.1", "1.21",
@@ -120,19 +120,6 @@ libby {
     noChecksumDependency("com.github.retrooper.packetevents:.*:.*")
 }
 
-configurations.all {
-    // I hate this, but it needs to be done as bungeecord does not support newer versions of adventure, and packetevents includes it
-    resolutionStrategy {
-        force("net.kyori:adventure-text-minimessage:4.14.0")
-        force("net.kyori:adventure-text-serializer-gson:4.14.0")
-        force("net.kyori:adventure-text-serializer-legacy:4.14.0")
-        force("net.kyori:adventure-text-serializer-json:4.14.0")
-        force("net.kyori:adventure-api:4.14.0")
-        force("net.kyori:adventure-nbt:4.14.0")
-        force("net.kyori:adventure-key:4.14.0")
-    }
-}
-
 dependencies {
     //API
     implementation(project(":API"))
@@ -154,7 +141,6 @@ dependencies {
 
     //ACF
     libby("com.github.kyngs.commands:acf-velocity:7d5bf7cac0")
-    libby("com.github.kyngs.commands:acf-bungee:7d5bf7cac0")
     libby("com.github.kyngs.commands:acf-paper:7d5bf7cac0")
 
     //Utils
@@ -166,7 +152,7 @@ dependencies {
     libby("org.bouncycastle:bcprov-jdk18on:1.80")
     libby("org.apache.commons:commons-email:1.6.0")
     // DO NOT UPGRADE TO 4.15.0 OR ABOVE BEFORE TESTING WATERFALL AND BUNGEECORD COMPATIBILITY!!!
-    libby("net.kyori:adventure-text-minimessage:4.14.0")
+    libby("net.kyori:adventure-text-minimessage:5.2.0")
     libby("com.github.kyngs:LegacyMessage:0.2.0")
 
     //Geyser
@@ -174,14 +160,8 @@ dependencies {
     //LuckPerms
     compileOnly("net.luckperms:api:5.4")
 
-    //Bungeecord
-    compileOnly("net.md-5:bungeecord-api:1.21-R0.1-SNAPSHOT")
-    compileOnly("com.github.ProxioDev.ValioBungee:RedisBungee-Bungee:0.12.5")
-    libby("net.kyori:adventure-platform-bungeecord:4.1.2")
-
     //BStats
     libby("org.bstats:bstats-velocity:3.0.2")
-    libby("org.bstats:bstats-bungeecord:3.0.2")
     libby("org.bstats:bstats-bukkit:3.0.2")
 
     //Paper
@@ -195,7 +175,6 @@ dependencies {
     //Libby
     implementation("xyz.kyngs.libby:libby-bukkit:1.6.0")
     implementation("xyz.kyngs.libby:libby-velocity:1.6.0")
-    implementation("xyz.kyngs.libby:libby-bungee:1.6.0")
     implementation("xyz.kyngs.libby:libby-paper:1.6.0")
 
     //NanoLimboPlugin
@@ -207,9 +186,6 @@ dependencies {
 tasks.withType<ProcessResources> {
     outputs.upToDateWhen { false }
     filesMatching("plugin.yml") {
-        expand(mapOf("version" to version))
-    }
-    filesMatching("bungee.yml") {
         expand(mapOf("version" to version))
     }
     filesMatching("paper-plugin.yml") {

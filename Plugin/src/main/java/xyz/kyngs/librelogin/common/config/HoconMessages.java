@@ -7,7 +7,6 @@
 package xyz.kyngs.librelogin.common.config;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.spongepowered.configurate.CommentedConfigurationNode;
 import xyz.kyngs.librelogin.api.BiHolder;
@@ -30,7 +29,7 @@ public class HoconMessages implements Messages {
 
     private static final MiniMessage SERIALIZER = MiniMessage.builder()
             .build();
-    private final Map<String, TextComponent> messages;
+    private final Map<String, Component> messages;
     private final Logger logger;
     private ConfigurateConfiguration rawMessages;
 
@@ -39,12 +38,12 @@ public class HoconMessages implements Messages {
         messages = new HashMap<>();
     }
 
-    public Map<String, TextComponent> getMessages() {
+    public Map<String, Component> getMessages() {
         return messages;
     }
 
     @Override
-    public TextComponent getMessage(String key, String... replacements) {
+    public Component getMessage(String key, String... replacements) {
 
         var message = messages.get(key);
 

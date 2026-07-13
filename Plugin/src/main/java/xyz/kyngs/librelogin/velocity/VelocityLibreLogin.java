@@ -58,8 +58,6 @@ public class VelocityLibreLogin extends AuthenticLibreLogin<Player, RegisteredSe
     @Inject
     private PluginDescription description;
     @Nullable
-    private VelocityRedisBungeeIntegration redisBungee;
-    @Nullable
     private LimboIntegration<RegisteredServer> limboIntegration;
 
     public VelocityLibreLogin(VelocityBootstrap bootstrap) {
@@ -182,9 +180,6 @@ public class VelocityLibreLogin extends AuthenticLibreLogin<Player, RegisteredSe
 
     @Override
     protected void enable() {
-        if (pluginPresent("redisbungee")) {
-            redisBungee = new VelocityRedisBungeeIntegration();
-        }
         super.enable();
         getLogger().info("LibreLogin version " + getVersion() + " enabled!");
     }
@@ -196,12 +191,12 @@ public class VelocityLibreLogin extends AuthenticLibreLogin<Player, RegisteredSe
 
     @Override
     public boolean isPresent(UUID uuid) {
-        return redisBungee != null ? redisBungee.isPlayerOnline(uuid) : getPlayerForUUID(uuid) != null;
+        return getPlayerForUUID(uuid) != null;
     }
 
     @Override
     public boolean multiProxyEnabled() {
-        return redisBungee != null;
+        return false;
     }
 
     @Override
